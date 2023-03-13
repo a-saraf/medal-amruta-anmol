@@ -15,5 +15,5 @@ def make_dataset(dir):
     for file_name in sorted(os.listdir(dir)):
         file_path = dir + '/' + file_name
         if(file_name.endswith('nii.gz')):
-            images.append(file_name)
+            images.append(file_path)
     return images
