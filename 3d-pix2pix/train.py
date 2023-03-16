@@ -1,11 +1,8 @@
 import torch
-import numpy as np
+import time
 from dataset import create_dataset
 from unet3d import unet
 from gan3d import Discriminator
-import nibabel as nib
-import os
-from torchsummary import summary
 from torch.autograd import Variable
 
 preop_dir = '../DATA/00_Train/'
@@ -40,6 +37,7 @@ epochs = 500
 Tensor = torch.cuda.FloatTensor if (device == "cuda") else torch.FloatTensor
 
 for epoch in range(epochs):
+    start_time = time.time()
     for i, data in enumerate(dataset):
         
         pre_data = data["pre"]
@@ -80,4 +78,6 @@ for epoch in range(epochs):
         torch.save(gen_model, path)
         path = '../ckpt_models/dis_models/dis_model_epoch' + str(epoch + 1) + 'pth'
         torch.save(dis_model, path)
+
+    print(time.time() - start_time)
 
