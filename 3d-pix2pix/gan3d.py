@@ -10,9 +10,7 @@ class Discriminator(nn.Module):
         self.bn2 = nn.BatchNorm3d(128)
         self.conv3 = nn.Conv3d(128, 256, kernel_size=4, stride=2, padding=1, bias=False)
         self.bn3 = nn.BatchNorm3d(256)
-        self.conv4 = nn.Conv3d(256, 512, kernel_size=4, stride=2, padding=1, bias=False)
-        self.bn4 = nn.BatchNorm3d(512)
-        self.conv5 = nn.Conv3d(512, 1, kernel_size=4, stride=2, padding=1, bias=False)
+        self.conv4 = nn.Conv3d(256, 1, kernel_size=4, stride=2, padding=1, bias=False)
         self.relu = nn.LeakyReLU(0.2, inplace=True)
         self.flat = nn.Flatten()
         self.sigmoid = nn.Sigmoid()
@@ -31,10 +29,6 @@ class Discriminator(nn.Module):
         x = self.relu(x)
 
         x = self.conv4(x)
-        x = self.bn4(x)
-        x = self.relu(x)
-
-        x = self.conv5(x)
         x = self.flat(x)
         x = self.sigmoid(x)
         return x
