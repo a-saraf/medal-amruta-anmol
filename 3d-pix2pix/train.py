@@ -33,8 +33,8 @@ for epoch in range(epochs):
         pre_data = data["pre"]
         post_data = data["post"]
 
-        valid = Variable(torch.FloatTensor(196, 1).fill_(1.0), requires_grad=False)
-        fake = Variable(torch.FloatTensor(196, 1).fill_(0.0), requires_grad=False)
+        valid = Variable(torch.FloatTensor(1, 196).fill_(1.0), requires_grad=False)
+        fake = Variable(torch.FloatTensor(1, 196).fill_(0.0), requires_grad=False)
 
         optimizer_G.zero_grad()
         generated_postop_data = gen_model(pre_data)
