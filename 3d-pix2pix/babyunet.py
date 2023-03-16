@@ -1,115 +1,81 @@
+import torch.nn as nn
+
 class unet(nn.Module):
     
     def __init__(self, ):
         super(unet, self).__init__()
         
+        self.elu=nn.ELU()
+        self.sig=nn.Sigmoid()
         self.maxpool = nn.MaxPool3d((2, 2, 2))
+        #maxpool and elu
         
         self.conv1 = nn.Conv3d(in_channels=1, out_channels=8, kernel_size=3)
         self.conv2 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3)
-        self.conv3 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3)
+        self.conv3 = nn.Conv3d(in_channels=8, out_channels=16, kernel_size=3)
+        self.conv4 = nn.Conv3d(in_channels=16, out_channels=16, kernel_size=3)
+        self.conv5 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3)
+        self.conv6 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3)
+        self.conv7 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3)
+        self.conv8 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3)
+        #going down
         
-        self.linear1 = nn.Linear(4800, 2000)
-        self.dropout1 = nn.Dropout3d(0.5)
+        self.conv9 = nn.Conv3d(in_channels=64, out_channels=128, kernel_size=3)
+        self.conv10 = nn.Conv3d(in_channels=128, out_channels=128, kernel_size=3)
+        #bottom
         
-        self.linear2 = nn.Linear(2000, 500)
-        self.dropout2 = nn.Dropout3d(0.5)
-        
-        self.linear3 = nn.Linear(500, 3)
+        self.convT1 = nn.ConvTranspose3d(in_channels=128, out_channels=64, kernel_size=3, stride=2)
+        self.convT2 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=3, stride=2)
+        self.convT3 = nn.ConvTranspose3d(in_channels=32, out_channels=16, kernel_size=3, stride=2)
+        self.convT4 = nn.ConvTranspose3d(in_channels=16, out_channels=8, kernel_size=3, stride=2)
+        #coming up
+
+        self.conv11 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3)
+        self.conv12 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3)
+        self.conv13 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3)
+        self.conv14 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3)
+        self.conv15 = nn.Conv3d(in_channels=16, out_channels=16, kernel_size=3)
+        self.conv16 = nn.Conv3d(in_channels=16, out_channels=16, kernel_size=3)
+        self.conv17 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3)
+        self.conv18 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3)
+        #coming up
+        self.conv19 = nn.Conv3d(in_channels=8, out_channels=1, kernel_size=3)
+       
+        #last layer leftttt
+
+        self.dropout1 = nn.Dropout3d(0.1)
+        self.dropout2 = nn.Dropout3d(0.2)
+        self.dropout3 = nn.Dropout3d(0.3)
+        #dropout
         
     def forward(self, x):
         
-        out = self.maxpool(self.conv1(x))
-        out = self.maxpool(self.conv2(out))
-        out = self.maxpool(self.conv3(out))
+        out1 = self.elu(self.conv2(self.dropout1(self.elu(self.conv1(x))
+        out2 = self.maxpool(out1)
+        out3 = self.elu(self.conv4(self.dropout1(self.elu(self.conv3(out2))
+        out4 = self.maxpool(out3)
+        out5 = self.elu(self.conv6(self.dropout2(self.elu(self.conv5(out4))
+        out6 = self.maxpool(out5)
+        out7 = self.elu(self.conv8(self.dropout2(self.elu(self.conv7(out6))
+        out8 = self.maxpool(out7)
+        #going down
+                                                
+        out9 = self.elu(self.conv10(self.dropout3(self.elu(self.conv9(out8))
+        #lowermost block
+                                               
+        out10 = self.convT1(out9)
+        out11 = torch.cat(out10,out7) 
+        out12 = self.elu(self.conv12(self.dropout2(self.elu(self.conv11(out11))                                
+        out13 = self.convT2(out12)
+        out14 = torch.cat(out13,out5)
+        out15 = self.elu(self.conv14(self.dropout2(self.elu(self.conv13(out14))
+        out16 = self.convT3(out15)
+        out17 = torch.cat(out16,out3)
+        out18 = self.elu(self.conv16(self.dropout1(self.elu(self.conv15(out17))
+        out19 = self.convT4(out18)
+        out20 = torch.cat(out19,out1)
+        out21 = self.elu(self.conv18(self.dropout1(self.elu(self.conv17(out20))
+                                                  
+        out22 = self.conv19(out21)
         
-        # Flattening process
-        b, c, d, h, w = out.size() # batch_size, channels, depth, height, width
-        out = out.view(-1, c * d * h * w)
-        
-        out = self.dropout1(self.linear1(out))
-        out = self.dropout2(self.linear2(out))
-        out = self.linear3(out)
-        
-        out = torch.softmax(out, 1)
-        
-        return out
-
-
-
-
-#Input image shape provided
-inputs = Input((240,240,155,1))
-
-
-c1 = Conv3D(1, 16, (3, 3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (s)
-c1 = Dropout(0.1) (c1)
-c1 = Conv3D(16, 16, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c1)
-p1 = MaxPooling2D((2, 2)) (c1)
-
-c2 = Conv3D(16, 32, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (p1)
-c2 = Dropout(0.1) (c2)
-c2 = Conv3D(32, 32, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c2)
-p2 = MaxPooling2D((2, 2)) (c2)
-
-c3 = Conv3D(64, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (p2)
-c3 = Dropout(0.1) (c3)
-c3 = Conv3D(64, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c3)
-p3 = MaxPooling2D((2, 2)) (c3)
-
-c4 = Conv3D(128, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (p3)
-c4 = Dropout(0.2) (c4)
-c4 = Conv3D(128, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c4)
-p4 = MaxPooling2D(pool_size=(2, 2)) (c4)
-
-c5 = Conv2D(256, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (p4)
-c5 = Dropout(0.2) (c5)
-c5 = Conv2D(256, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c5)
-p5 = MaxPooling2D(pool_size=(2, 2)) (c5)
-
-#The lowermost layer has two convolutional layers and a dropout layer
-c6 = Conv3D(512, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (p5)
-c6 = Dropout(0.3) (c6)
-c6 = Conv3D(512, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c6)
-
-#The upscaling layers have a convolutional layer, then the previous same size output is concatenated(a skip connection),
-#then another convolutional layer, a dropout layer and another convolutional layer
-#Five such blocks
-u7 = Conv3DTranspose(256, (2, 2), strides=(2, 2), padding='same') (c6)
-u7 = concatenate([u7, c5])
-c7 = Conv3D(256, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (u7)
-c7 = Dropout(0.2) (c7)
-c7 = Conv3D(256, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c7)
-
-u8 = Conv3DTranspose(128, (2, 2), strides=(2, 2), padding='same') (c7)
-u8 = concatenate([u8, c4])
-c8 = Conv3D(128, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (u8)
-c8 = Dropout(0.2) (c8)
-c8 = Conv3D(128, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c8)
-
-u9 = Conv3DTranspose(64, (2, 2), strides=(2, 2), padding='same') (c8)
-u9 = concatenate([u9, c3])
-c9 = Conv3D(64, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (u9)
-c9 = Dropout(0.1) (c9)
-c9 = Conv3D(64, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c9)
-
-u10 = Conv3DTranspose(32, (2, 2), strides=(2, 2), padding='same') (c9)
-u10 = concatenate([u10, c2])
-c10 = Conv3D(32, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (u10)
-c10 = Dropout(0.1) (c10)
-c10 = Conv3D(32, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c10)
-
-u11 = Conv3DTranspose(16, (2, 2), strides=(2, 2), padding='same') (c10)
-u11 = concatenate([u11, c1], axis=3)
-c11 = Conv3D(16, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (u11)
-c11 = Dropout(0.1) (c11)
-c11 = Conv3D(16, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same') (c11)
-
-#Using the sigmoid activation function in the final layer
-outputs = Conv3D(1, (1, 1), activation='sigmoid') (c11)
-
-#Compiling the model with adam optimizer, learning rate 0.0003, bce dice loss as the loss and dice loss as the metric
-model = Model(inputs=[inputs], outputs=[outputs])
-model.compile(optimizer=Adam(lr=0.0003), loss=bce_dice_loss, metrics=[dice_loss])
-model.summary()
-# Reference: https://towardsdatascience.com/nucleus-segmentation-using-u-net-eceb14a9ced4
+        return out22
