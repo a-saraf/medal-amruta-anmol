@@ -13,7 +13,7 @@ postop_dir = '../DATA/01_Train/'
 
 dir = {"pre":preop_dir, "post":postop_dir}
 
-cuda = True if torch.cuda.is_available() else False
+device = torch.device("cuda" if torch.cuda_is_available() else "cpu")
 
 dataset = create_dataset(dir)
 dataset_size = len(dataset)
@@ -24,11 +24,13 @@ dis_model = Discriminator()
 generator_loss = torch.nn.BCELoss()
 discriminator_loss = torch.nn.BCELoss()
 
-if cuda:
-    gen_model.cuda()
-    dis_model.cuda()
-    generator_loss.cuda()
-    discriminator_loss.cuda()
+if device == "cuda":
+    gen_model = torch.nn.DataParallel(gen_model)
+    dis_model = torch.nn.DataParallel(dis_model)
+    gen_model.to(device)
+    dis_model.to(device)
+    generator_loss.to(device)
+    discriminator_loss.to(device)
 
 optimizer_G = torch.optim.Adam(gen_model.parameters())
 optimizers_D = torch.optim.Adam(dis_model.parameters())
