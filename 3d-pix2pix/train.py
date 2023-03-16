@@ -73,11 +73,10 @@ for epoch in range(epochs):
     file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
     file_log.close()
 
-    if((epoch+1)%50 == 0):
-        path = '../ckpt_models/gen_models/gen_model_epoch' + str(epoch + 1) + 'pth'
-        torch.save(gen_model, path)
-        path = '../ckpt_models/dis_models/dis_model_epoch' + str(epoch + 1) + 'pth'
-        torch.save(dis_model, path)
+    path = '../ckpt_models/gen_models/gen_model_last.pth'
+    torch.save(gen_model, path)
+    path = '../ckpt_models/dis_models/dis_model_last.pth'
+    torch.save(dis_model, path)
 
     print(time.time() - start_time)
 
