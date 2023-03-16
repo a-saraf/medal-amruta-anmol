@@ -49,11 +49,11 @@ for epoch in range(epochs):
 
         real_loss = discriminator_loss(dis_model(torch.cat([pre_data, post_data], axis=1)), valid)
         fake_loss = discriminator_loss(dis_model(concat_data.detach()), fake)
-        d_loss = (real_loss + fake_loss) / 2
+        loss_D = (real_loss + fake_loss) / 2
 
-        d_loss.backward()
+        loss_D.backward()
         optimizers_D.step()
 
-        print(generator_loss.item(), discriminator_loss.item())
+        print(loss_G.item(), loss_D.item())
         break
     break
