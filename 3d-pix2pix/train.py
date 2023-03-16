@@ -55,13 +55,13 @@ for epoch in range(epochs):
         loss_D.backward()
         optimizers_D.step()
 
-        print("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
-        file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()))
+    print("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
+    file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
 
-        if((i+1)%50 == 0):
-            path = '../ckpt_models/gen_models/gen_model_epoch' + str(i+1) + 'pth'
-            torch.save(gen_model, path)
-            path = '../ckpt_models/dis_models/dis_model_epoch' + str(i+1) + 'pth'
-            torch.save(dis_model, path)
+    if((epoch+1)%50 == 0):
+        path = '../ckpt_models/gen_models/gen_model_epoch' + str(epoch + 1) + 'pth'
+        torch.save(gen_model, path)
+        path = '../ckpt_models/dis_models/dis_model_epoch' + str(epoch + 1) + 'pth'
+        torch.save(dis_model, path)
 
 file_log.close()
