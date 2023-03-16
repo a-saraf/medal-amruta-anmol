@@ -45,8 +45,8 @@ for epoch in range(epochs):
         pre_data = data["pre"]
         post_data = data["post"]
 
-        valid = Variable(Tensor(1, 196).fill_(1.0), requires_grad=False)
-        fake = Variable(Tensor(1, 196).fill_(0.0), requires_grad=False)
+        valid = Variable(Tensor(1, 2025).fill_(1.0), requires_grad=False)
+        fake = Variable(Tensor(1, 2025).fill_(0.0), requires_grad=False)
 
         pre_data = Variable(pre_data.type(Tensor))
         post_data = Variable(post_data.type(Tensor))
