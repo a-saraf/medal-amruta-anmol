@@ -1,13 +1,13 @@
 import torch
 import numpy as np
 from dataset import create_dataset
-from unet3d import UnetGenerator
+from babyunet import unet
 from gan3d import Discriminator
 import nibabel as nib
 import os
 from torchsummary import summary
 
-model = Discriminator()
+model = unet()
 
 dir = '../DATA/00_Train/'
 

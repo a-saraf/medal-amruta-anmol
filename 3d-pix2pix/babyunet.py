@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 
 class unet(nn.Module):
     
@@ -50,31 +51,31 @@ class unet(nn.Module):
         
     def forward(self, x):
         
-        out1 = self.elu(self.conv2(self.dropout1(self.elu(self.conv1(x))
+        out1 = self.elu(self.conv2(self.dropout1(self.elu(self.conv1(x)))))
         out2 = self.maxpool(out1)
-        out3 = self.elu(self.conv4(self.dropout1(self.elu(self.conv3(out2))
+        out3 = self.elu(self.conv4(self.dropout1(self.elu(self.conv3(out2)))))
         out4 = self.maxpool(out3)
-        out5 = self.elu(self.conv6(self.dropout2(self.elu(self.conv5(out4))
+        out5 = self.elu(self.conv6(self.dropout2(self.elu(self.conv5(out4)))))
         out6 = self.maxpool(out5)
-        out7 = self.elu(self.conv8(self.dropout2(self.elu(self.conv7(out6))
+        out7 = self.elu(self.conv8(self.dropout2(self.elu(self.conv7(out6)))))
         out8 = self.maxpool(out7)
         #going down
                                                 
-        out9 = self.elu(self.conv10(self.dropout3(self.elu(self.conv9(out8))
+        out9 = self.elu(self.conv10(self.dropout3(self.elu(self.conv9(out8)))))
         #lowermost block
                                                
         out10 = self.convT1(out9)
-        out11 = torch.cat(out10,out7) 
-        out12 = self.elu(self.conv12(self.dropout2(self.elu(self.conv11(out11))                                
+        out11 = torch.cat([out10,out7]) 
+        out12 = self.elu(self.conv12(self.dropout2(self.elu(self.conv11(out11)))))                            
         out13 = self.convT2(out12)
-        out14 = torch.cat(out13,out5)
-        out15 = self.elu(self.conv14(self.dropout2(self.elu(self.conv13(out14))
+        out14 = torch.cat([out13,out5])
+        out15 = self.elu(self.conv14(self.dropout2(self.elu(self.conv13(out14)))))
         out16 = self.convT3(out15)
-        out17 = torch.cat(out16,out3)
-        out18 = self.elu(self.conv16(self.dropout1(self.elu(self.conv15(out17))
+        out17 = torch.cat([out16,out3])
+        out18 = self.elu(self.conv16(self.dropout1(self.elu(self.conv15(out17)))))
         out19 = self.convT4(out18)
-        out20 = torch.cat(out19,out1)
-        out21 = self.elu(self.conv18(self.dropout1(self.elu(self.conv17(out20))
+        out20 = torch.cat([out19,out1])
+        out21 = self.elu(self.conv18(self.dropout1(self.elu(self.conv17(out20)))))
                                                   
         out22 = self.conv19(out21)
         
