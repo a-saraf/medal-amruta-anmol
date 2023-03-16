@@ -66,8 +66,9 @@ for epoch in range(epochs):
 
         loss_D.backward()
         optimizers_D.step()
+        print(i, end=',')
 
-    print("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
+    print("\nepoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
 
     file_log = open("train_log.txt","a")
     file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
