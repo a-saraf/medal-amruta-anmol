@@ -19,18 +19,22 @@ def make_dataset(dir):
 class BaseDataset(Dataset):
     def __init__(self, dir, transform = None):
         self.dir = dir
-        self.images = make_dataset(dir)
+        self.preimages = make_dataset(dir["pre"])
+        self.postimages = make_dataset(dir["post"])
         self.transform = transform
 
     def __len__(self):
-        return len(self.images)
+        return len(self.preimages)
 
     def __getitem__(self, index):
-        img = nib.load(self.images[index])
-        img = img.get_fdata()
+        preimg = nib.load(self.preimages[index])
+        postimg = nib.load(self.postimages[index])
+        preimg = preimg.get_fdata()
+        postimg = postimg.get_fdata()
         if self.transform:
-            img = self.transform(img)
-        return img
+            preimg = self.transform(preimg)
+            postimg = self.transform(postimg)
+        return {"pre":preimg, "post":postimg}
     
 def create_dataset(dir):
     dataset = BaseDataset(dir, transform=transforms.Compose([ToTensor(expand_dims=True)]))

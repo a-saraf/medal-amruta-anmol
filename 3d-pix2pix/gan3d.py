@@ -15,6 +15,7 @@ class Discriminator(nn.Module):
         self.conv5 = nn.Conv3d(512, 1, kernel_size=4, stride=2, padding=1, bias=False)
         self.relu = nn.LeakyReLU(0.2, inplace=True)
         self.flat = nn.Flatten()
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x = self.conv1(x)
@@ -35,4 +36,5 @@ class Discriminator(nn.Module):
 
         x = self.conv5(x)
         x = self.flat(x)
+        x = self.sigmoid(x)
         return x
