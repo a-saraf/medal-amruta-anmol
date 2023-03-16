@@ -13,7 +13,7 @@ postop_dir = '../DATA/01_Train/'
 
 dir = {"pre":preop_dir, "post":postop_dir}
 
-device = torch.device("cuda" if torch.cuda_is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 dataset = create_dataset(dir)
 dataset_size = len(dataset)
@@ -37,7 +37,7 @@ optimizers_D = torch.optim.Adam(dis_model.parameters())
 
 epochs = 500
 
-Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+Tensor = torch.cuda.FloatTensor if (device == "cuda") else torch.FloatTensor
 
 for epoch in range(epochs):
     for i, data in enumerate(dataset):
