@@ -10,6 +10,7 @@ from torch.autograd import Variable
 
 preop_dir = '../DATA/00_Train/'
 postop_dir = '../DATA/01_Train/'
+file_log = open("train_log.txt","a")
 
 dir = {"pre":preop_dir, "post":postop_dir}
 
@@ -25,7 +26,7 @@ discriminator_loss = torch.nn.BCELoss()
 optimizer_G = torch.optim.Adam(gen_model.parameters())
 optimizers_D = torch.optim.Adam(dis_model.parameters())
 
-epochs = 100
+epochs = 500
 
 for epoch in range(epochs):
     for i, data in enumerate(dataset):
@@ -54,6 +55,13 @@ for epoch in range(epochs):
         loss_D.backward()
         optimizers_D.step()
 
-        print(loss_G.item(), loss_D.item())
-        break
-    break
+        print("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
+        file_log.write("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
+
+        if((i+1)%50 == 0):
+            path = '../ckpt_models/gen_models/gen_model_epoch' + str(i+1) + 'pth'
+            torch.save(gen_model, path)
+            path = '../ckpt_models/dis_models/dis_model_epoch' + str(i+1) + 'pth'
+            torch.save(dis_model, path)
+
+file_log.close()
