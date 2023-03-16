@@ -22,8 +22,6 @@ generator_loss = torch.nn.BCELoss()
 discriminator_loss = torch.nn.BCELoss()
 
 if device == "cuda":
-    gen_model = torch.nn.DataParallel(gen_model)
-    dis_model = torch.nn.DataParallel(dis_model)
     gen_model.to(device)
     dis_model.to(device)
     generator_loss.to(device)
