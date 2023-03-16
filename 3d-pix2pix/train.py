@@ -56,7 +56,7 @@ for epoch in range(epochs):
         optimizers_D.step()
 
         print("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
-        file_log.write("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
+        file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + loss_D.item())
 
         if((i+1)%50 == 0):
             path = '../ckpt_models/gen_models/gen_model_epoch' + str(i+1) + 'pth'
