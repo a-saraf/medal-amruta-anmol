@@ -4,6 +4,14 @@ from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
 
+def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02):
+   
+    net = None
+    norm_layer = get_norm_layer(norm_type=norm)
+    net = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+
+    return init_net(net, init_type, init_gain, gpu_ids)
+
 class UnetGenerator(nn.Module):
 
     def __init__(self, input_nc, output_nc, num_downs, ngf=64, norm_layer=nn.BatchNorm3d, use_dropout=False):
