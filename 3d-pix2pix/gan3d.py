@@ -13,6 +13,7 @@ class Discriminator(nn.Module):
         self.bn4 = nn.BatchNorm3d(512)
         self.conv5 = nn.Conv3d(512, 1, kernel_size=4, stride=2, padding=1, bias=False)
         self.relu = nn.LeakyReLU(0.2, inplace=True)
+        self.flat = nn.Flatten()
 
     def forward(self, x):
         x = self.conv1(x)
@@ -32,5 +33,6 @@ class Discriminator(nn.Module):
         x = self.relu(x)
 
         x = self.conv5(x)
+        x = self.flat(x)
         return x
     

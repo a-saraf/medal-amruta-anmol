@@ -1,79 +1,104 @@
-import torch
 import torch.nn as nn
-from torch.nn import init
-import functools
-from torch.optim import lr_scheduler
+import torch
 
-def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02):
-   
-    net = None
-    norm_layer = functools.partial(nn.BatchNorm3d, affine=True, track_running_stats=True)
-    net = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
-
-    return init_net(net, init_type, init_gain, gpu_ids)
-
-class UnetGenerator(nn.Module):
-
-    def __init__(self, input_nc, output_nc, num_downs, ngf=64, norm_layer=nn.BatchNorm3d, use_dropout=False):
-
-        super(UnetGenerator, self).__init__()
-
-        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, input_nc=None, submodule=None, norm_layer=norm_layer, innermost=True)  
-
-        for i in range(num_downs - 5):        
-            unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, input_nc=None, submodule=unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
-
-        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
-        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
-        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
-        self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)  
-
-    def forward(self, input):
-        return self.model(input)
-
-
-class UnetSkipConnectionBlock(nn.Module):
-
-    def __init__(self, outer_nc, inner_nc, input_nc=None, submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm3d, use_dropout=False):
+class unet(nn.Module):
     
-        super(UnetSkipConnectionBlock, self).__init__()
-        self.outermost = outermost
-        if type(norm_layer) == functools.partial: 
-            use_bias = norm_layer.func == nn.InstanceNorm3d
-        else:
-            use_bias = norm_layer == nn.InstanceNorm3d
-        if input_nc is None:
-            input_nc = outer_nc
-        downconv = nn.Conv3d(input_nc, inner_nc, kernel_size=4, stride=2, padding=1, bias=use_bias)
-        downrelu = nn.LeakyReLU(0.2, True)
-        downnorm = norm_layer(inner_nc)
-        uprelu = nn.ReLU(True)
-        upnorm = norm_layer(outer_nc)
+    def __init__(self, ):
+        super(unet, self).__init__()
+        
+        self.elu=nn.ELU()
+        self.sig=nn.Sigmoid()
+        self.maxpool = nn.MaxPool3d((2, 2, 2))
+        #maxpool and elu
+        
+        self.conv1 = nn.Conv3d(in_channels=1, out_channels=8, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv3d(in_channels=8, out_channels=16, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv3d(in_channels=16, out_channels=16, kernel_size=3, padding=1)
+        self.conv5 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
+        self.conv6 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, padding=1)
+        self.conv7 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
+        self.conv8 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
+        #going down
+        
+        self.conv9 = nn.Conv3d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
+        self.conv10 = nn.Conv3d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
+        #bottom
+        
+        self.convT1 = nn.ConvTranspose3d(in_channels=128, out_channels=64, kernel_size=(2,2,3), stride=2, padding=0)
+        self.convT2 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=2, stride=2)
+        self.convT3 = nn.ConvTranspose3d(in_channels=32, out_channels=16, kernel_size=(2,2,3), stride=2)
+        self.convT4 = nn.ConvTranspose3d(in_channels=16, out_channels=8, kernel_size=(2,2,3), stride=2)
+        #coming up
 
-        if outermost:
-            upconv = nn.ConvTranspose3d(inner_nc * 2, outer_nc, kernel_size=4, stride=2, padding=1)
-            down = [downconv]
-            up = [uprelu, upconv, nn.Tanh()]
-            model = down + [submodule] + up
-        elif innermost: 
-            upconv = nn.ConvTranspose3d(inner_nc, outer_nc, kernel_size=4, stride=2, padding=1, bias=use_bias)
-            down = [downrelu, downconv]
-            up = [uprelu, upconv, upnorm]
-            model = down + up
-        else:
-            upconv = nn.ConvTranspose3d(inner_nc * 2, outer_nc, kernel_size=4, stride=2, padding=1, bias=use_bias)
-            down = [downrelu, downconv, downnorm]
-            up = [uprelu, upconv, upnorm]
+        self.conv11 = nn.Conv3d(in_channels=128, out_channels=64, kernel_size=3, padding=1)
+        self.conv12 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
+        self.conv13 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, padding=1)
+        self.conv14 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, padding=1)
+        self.conv15 = nn.Conv3d(in_channels=32, out_channels=16, kernel_size=3, padding=1)
+        self.conv16 = nn.Conv3d(in_channels=16, out_channels=16, kernel_size=3, padding=1)
+        self.conv17 = nn.Conv3d(in_channels=16, out_channels=8, kernel_size=3, padding=1)
+        self.conv18 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3, padding=1)
+        #coming up
+        self.conv19 = nn.Conv3d(in_channels=8, out_channels=1, kernel_size=3, padding=1)
+       
+        #last layer leftttt
 
-            if use_dropout:
-                model = down + [submodule] + up + [nn.Dropout(0.5)]
-            else:
-                model = down + [submodule] + up
-
-        self.model = nn.Sequential(*model)
-
+        self.dropout1 = nn.Dropout3d(0.1)
+        self.dropout2 = nn.Dropout3d(0.2)
+        self.dropout3 = nn.Dropout3d(0.3)
+        #dropout
+        
     def forward(self, x):
-        if self.outermost:
-            return self.model(x)
-        else:   
-            return torch.cat([x, self.model(x)], 1)
+        #print (torch.Tensor.size(x))
+        out1 = self.elu(self.conv2(self.dropout1(self.elu(self.conv1(x)))))
+        #print (torch.Tensor.size(out1))
+        out2 = self.maxpool(out1)
+        #print (torch.Tensor.size(out2))
+        out3 = self.elu(self.conv4(self.dropout1(self.elu(self.conv3(out2)))))
+        #print (torch.Tensor.size(out3))
+        out4 = self.maxpool(out3)
+        #print (torch.Tensor.size(out4))
+        out5 = self.elu(self.conv6(self.dropout2(self.elu(self.conv5(out4)))))
+        #print (torch.Tensor.size(out5))
+        out6 = self.maxpool(out5)
+        #print (torch.Tensor.size(out6))
+        out7 = self.elu(self.conv8(self.dropout2(self.elu(self.conv7(out6)))))
+        #print (torch.Tensor.size(out7))
+        out8 = self.maxpool(out7)
+        #print (torch.Tensor.size(out8))
+        #going down
+                                                
+        out9 = self.elu(self.conv10(self.dropout3(self.elu(self.conv9(out8)))))
+        #print (torch.Tensor.size(out9))
+        #lowermost block
+                                               
+        out10 = self.convT1(out9)
+        #print (torch.Tensor.size(out10))
+        out11 = torch.cat((out10,out7),1) 
+        #print (torch.Tensor.size(out11))
+        out12 = self.elu(self.conv12(self.dropout2(self.elu(self.conv11(out11)))))  
+        #print (torch.Tensor.size(out12))                          
+        out13 = self.convT2(out12)
+        #print (torch.Tensor.size(out13))
+        out14 = torch.cat((out13,out5),1)
+        #print (torch.Tensor.size(out14))
+        out15 = self.elu(self.conv14(self.dropout2(self.elu(self.conv13(out14)))))
+        #print (torch.Tensor.size(out15))
+        out16 = self.convT3(out15)
+        #print (torch.Tensor.size(out16))
+        out17 = torch.cat((out16,out3),1)
+        #print (torch.Tensor.size(out17))
+        out18 = self.elu(self.conv16(self.dropout1(self.elu(self.conv15(out17)))))
+        #print (torch.Tensor.size(out18))
+        out19 = self.convT4(out18)
+        #print (torch.Tensor.size(out19))
+        out20 = torch.cat((out19,out1),1)
+        #print (torch.Tensor.size(out20))
+        out21 = self.elu(self.conv18(self.dropout1(self.elu(self.conv17(out20)))))
+        #print (torch.Tensor.size(out21))
+                                                  
+        out22 = self.sig(self.conv19(out21))
+        #print (torch.Tensor.size(out22))
+        
+        return out22
