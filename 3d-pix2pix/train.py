@@ -10,7 +10,6 @@ from torch.autograd import Variable
 
 preop_dir = '../DATA/00_Train/'
 postop_dir = '../DATA/01_Train/'
-file_log = open("train_log.txt","a")
 
 dir = {"pre":preop_dir, "post":postop_dir}
 
@@ -56,12 +55,14 @@ for epoch in range(epochs):
         optimizers_D.step()
 
     print("epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
-    file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
 
+    file_log = open("train_log.txt","a")
+    file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
+    file_log.close()
+    
     if((epoch+1)%50 == 0):
         path = '../ckpt_models/gen_models/gen_model_epoch' + str(epoch + 1) + 'pth'
         torch.save(gen_model, path)
         path = '../ckpt_models/dis_models/dis_model_epoch' + str(epoch + 1) + 'pth'
         torch.save(dis_model, path)
 
-file_log.close()
