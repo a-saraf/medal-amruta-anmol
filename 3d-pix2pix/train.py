@@ -6,6 +6,7 @@ from gan3d import Discriminator
 import nibabel as nib
 import os
 from torchsummary import summary
+from torch.autograd import Variable
 
 preop_dir = '../DATA/00_Train/'
 postop_dir = '../DATA/01_Train/'
@@ -29,13 +30,28 @@ epochs = 100
 for epoch in range(epochs):
     for i, data in enumerate(preop_dataset):
         
+        valid = Variable(torch.Tensor(196, 1).fill(1.0), requires_grad=False)
+        fake = Variable(torch.Tensor(196, 1).fill(0.0), requires_grad=False)
+
         optimizer_G.zero_grad()
         generated_postop_data = gen_model(data)
-        loss_G = generator_loss()
-
+        
         concat_data = torch.cat([data, generated_postop_data], axis=1)
 
-        print(concat_data.shape)
+        loss_G = generator_loss(dis_model(concat_data), valid)
+        loss_G.backward()
+        optimizer_G.step()
+
+        optimizers_D.zero_grad()
+
+        real_loss = discriminator_loss(dis_model(torch.cat([data, postop_dataset[i]], axis=1)), valid)
+        fake_loss = discriminator_loss(dis_model(concat_data.detach()), fake)
+        d_loss = (real_loss + fake_loss) / 2
+
+        d_loss.backward()
+        optimizers_D.step()
+
+        print(generator_loss.item(), discriminator_loss.item())
         break
     break
 

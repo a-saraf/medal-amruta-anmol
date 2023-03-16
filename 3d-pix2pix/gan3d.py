@@ -1,9 +1,10 @@
 import torch.nn as nn
+from torchsummary import summary
 
 class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
-        self.conv1 = nn.Conv3d(1, 64, kernel_size=4, stride=2, padding=1, bias=False)
+        self.conv1 = nn.Conv3d(2, 64, kernel_size=4, stride=2, padding=1, bias=False)
         self.bn1 = nn.BatchNorm3d(64)
         self.conv2 = nn.Conv3d(64, 128, kernel_size=4, stride=2, padding=1, bias=False)
         self.bn2 = nn.BatchNorm3d(128)
@@ -35,4 +36,3 @@ class Discriminator(nn.Module):
         x = self.conv5(x)
         x = self.flat(x)
         return x
-    
