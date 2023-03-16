@@ -2,6 +2,7 @@ import nibabel as nib
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 import os
+import numpy as np
 
 path_file = '../DATA/00_Train/'
 
@@ -26,6 +27,8 @@ class BaseDataset(Dataset):
     def __getitem__(self, index):
         img = nib.load(self.images[index])
         img = img.get_fdata()
+        img = np.asarray(img)
+        img = img.reshape(1, 240, 240, 155)
         if self.transform:
             img = self.transform(img)
         return img
