@@ -1,3 +1,5 @@
+import torch.nn as nn
+
 class unet(nn.Module):
     
     def __init__(self, ):
@@ -37,6 +39,7 @@ class unet(nn.Module):
         self.conv17 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3)
         self.conv18 = nn.Conv3d(in_channels=8, out_channels=8, kernel_size=3)
         #coming up
+        self.conv19 = nn.Conv3d(in_channels=8, out_channels=1, kernel_size=3)
        
         #last layer leftttt
 
@@ -73,6 +76,6 @@ class unet(nn.Module):
         out20 = torch.cat(out19,out1)
         out21 = self.elu(self.conv18(self.dropout1(self.elu(self.conv17(out20))
                                                   
-        out22 = #8 channels to 1 channel
+        out22 = self.conv19(out21)
         
         return out22
