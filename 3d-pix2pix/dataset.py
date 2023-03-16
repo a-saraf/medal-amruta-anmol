@@ -1,6 +1,7 @@
 import nibabel as nib
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
+import torch
 import os
 import numpy as np
 
@@ -27,13 +28,22 @@ class BaseDataset(Dataset):
     def __getitem__(self, index):
         img = nib.load(self.images[index])
         img = img.get_fdata()
-        img = np.asarray(img)
-        img = img.reshape(1, 240, 240, 155)
         if self.transform:
             img = self.transform(img)
         return img
     
 def create_dataset(dir):
-    dataset = BaseDataset(dir = dir, transform = transforms.Compose([transforms.ToTensor()]))
-    dataloader = DataLoader(dataset)
+    dataset = BaseDataset(dir, transform=transforms.Compose([ToTensor(expand_dims=True)]))
+    dataloader = DataLoader(dataset, batch_size=1)
     return dataloader
+
+class ToTensor:
+    def __init__(self, expand_dims, dtype=np.float32):
+        self.expand_dims = expand_dims
+        self.dtype = dtype
+
+    def __call__(self, m):
+        assert m.ndim in [3, 4], 'Supports only 3D or 4D images'
+        if self.expand_dims and m.ndim == 3:
+            m = np.expand_dims(m, axis=0)
+        return torch.from_numpy(m.astype(dtype=self.dtype))

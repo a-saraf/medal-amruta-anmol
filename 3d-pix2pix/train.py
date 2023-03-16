@@ -21,15 +21,18 @@ dir = '../DATA/00_Train/'
 
 dataset = create_dataset(dir)
 
-print(summary(model, (1, 155, 240, 240)))
+
+
+# print(summary(model, (1, 155, 240, 240)))
 
 # print(summary(model, (155, 240, 240)))
 
-# for test_images in dataset:
-#     sample = test_images[0]
-#     temp = model.forward(sample)
-#     print(temp)
-#     break
+for (idx, test_images) in enumerate(dataset):
+    sample = test_images
+    temp = model(sample)
+    print(temp.shape)
+    print(temp)
+    break
 
 # 102 Images Dataloader
 # dim 155 240 240 3D image
