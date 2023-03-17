@@ -126,7 +126,7 @@ for epoch in range(epochs):
     print("Val:epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
 
     file_log = open("val_log.txt","a")
-    file_log.write("epoch," + str(epoch+1) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
+    file_log.write("epoch " + str(epoch+1) + " loss_G "+ str(loss_G.item()) + " loss_D " + str(loss_D.item()) + '\n')
     file_log.close()
 
     if loss_G_total > last_loss:
