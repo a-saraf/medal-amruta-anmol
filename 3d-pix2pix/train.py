@@ -5,15 +5,23 @@ from unet3d import unet
 from gan3d import Discriminator
 from torch.autograd import Variable
 
-preop_dir = '../DATA/00_Train/'
-postop_dir = '../DATA/01_Train/'
+train_preop_dir = '../DATA/00_Train/'
+train_postop_dir = '../DATA/01_Train/'
 
-dir = {"pre":preop_dir, "post":postop_dir}
+val_preop_dir = '../DATA/00_Val/'
+val_postop_dir = '../DATA/01_Val/'
+
+train_dir = {"pre":train_preop_dir, "post":train_postop_dir}
+val_dir = {"pre":val_preop_dir, "post":val_postop_dir}
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
 
-dataset = create_dataset(dir)
-dataset_size = len(dataset)
+train_dataset = create_dataset(train_dir)
+train_dataset_size = len(train_dataset)
+
+val_dataset = create_dataset(val_dir)
+val_dataset_size = len(val_dataset)
 
 gen_model = unet()
 dis_model = Discriminator()
@@ -34,9 +42,16 @@ epochs = 500
 
 Tensor = torch.cuda.FloatTensor if (device == "cuda") else torch.FloatTensor
 
+last_loss = 1000
+patience = 5
+triggertimes = 0
+
 for epoch in range(epochs):
+    gen_model.train()
+    dis_model.train()
+
     start_time = time.time()
-    for i, data in enumerate(dataset):
+    for i, data in enumerate(train_dataset):
         
         pre_data = data["pre"]
         post_data = data["post"]
@@ -64,12 +79,11 @@ for epoch in range(epochs):
 
         loss_D.backward()
         optimizers_D.step()
-        print(i, end=',')
 
-    print("\nepoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
+    print("Train:epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
 
     file_log = open("train_log.txt","a")
-    file_log.write("epoch," + str(epoch) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
+    file_log.write("epoch," + str(epoch+1) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
     file_log.close()
 
     path = '../ckpt_models/gen_models/gen_model_last.pth'
@@ -77,5 +91,55 @@ for epoch in range(epochs):
     path = '../ckpt_models/dis_models/dis_model_last.pth'
     torch.save(dis_model, path)
 
+    # Validation Part
+    loss_G_total = 0
+    loss_D_total = 0
+    gen_model.eval()
+    dis_model.eval()
+    
+    with torch.no_grad():
+        for i, data in enumerate(val_dataset):
+            pre_data = data["pre"]
+            post_data = data["post"]
+
+            valid = Variable(Tensor(1, 2025).fill_(1.0), requires_grad=False)
+            fake = Variable(Tensor(1, 2025).fill_(0.0), requires_grad=False)
+
+            pre_data = Variable(pre_data.type(Tensor))
+            post_data = Variable(post_data.type(Tensor))
+            generated_postop_data = gen_model(pre_data)
+        
+            concat_data = torch.cat([pre_data, generated_postop_data], axis=1)
+
+            loss_G = generator_loss(dis_model(concat_data), valid)
+            
+            real_loss = discriminator_loss(dis_model(torch.cat([pre_data, post_data], axis=1)), valid)
+            fake_loss = discriminator_loss(dis_model(concat_data.detach()), fake)
+            loss_D = (real_loss + fake_loss) / 2
+
+            loss_G_total += loss_G.item()
+            loss_D_total += loss_D.item()
+
+    loss_G_total /= val_dataset_size
+    loss_D_total /= val_dataset_size
+
+    print("Val:epoch", epoch, "loss_G", loss_G.item(), "loss_D", loss_D.item())
+
+    file_log = open("val_log.txt","a")
+    file_log.write("epoch," + str(epoch+1) + "loss_G,"+ str(loss_G.item()) + "loss_D," + str(loss_D.item()) + '\n')
+    file_log.close()
+
+    if loss_G_total > last_loss:
+        triggertimes += 1
+        if triggertimes >= patience:
+            print('------------------------------')
+            print('Early Stopping')
+            print('------------------------------')
+            break
+        else:
+            triggertimes = 0
+    last_loss = loss_G_total
+
     print(time.time() - start_time)
+    print('------------------------------------------------------------------------------------------------')
 
