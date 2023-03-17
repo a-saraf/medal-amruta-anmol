@@ -17,22 +17,18 @@ class unet(nn.Module):
         self.conv4 = nn.Conv3d(in_channels=16, out_channels=16, kernel_size=3, padding=1)
         self.conv5 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
         self.conv6 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, padding=1)
-        self.conv7 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
-        self.conv8 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
         #going down
         
-        self.conv9 = nn.Conv3d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
-        self.conv10 = nn.Conv3d(in_channels=128, out_channels=128, kernel_size=3, padding=1)
+        self.conv9 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
+        self.conv10 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
         #bottom
         
-        self.convT1 = nn.ConvTranspose3d(in_channels=128, out_channels=64, kernel_size=(2,2,3), stride=2, padding=0)
+        #self.convT1 = nn.ConvTranspose3d(in_channels=128, out_channels=64, kernel_size=(2,2,3), stride=2, padding=0)
         self.convT2 = nn.ConvTranspose3d(in_channels=64, out_channels=32, kernel_size=2, stride=2)
         self.convT3 = nn.ConvTranspose3d(in_channels=32, out_channels=16, kernel_size=(2,2,3), stride=2)
         self.convT4 = nn.ConvTranspose3d(in_channels=16, out_channels=8, kernel_size=(2,2,3), stride=2)
         #coming up
 
-        self.conv11 = nn.Conv3d(in_channels=128, out_channels=64, kernel_size=3, padding=1)
-        self.conv12 = nn.Conv3d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
         self.conv13 = nn.Conv3d(in_channels=64, out_channels=32, kernel_size=3, padding=1)
         self.conv14 = nn.Conv3d(in_channels=32, out_channels=32, kernel_size=3, padding=1)
         self.conv15 = nn.Conv3d(in_channels=32, out_channels=16, kernel_size=3, padding=1)
@@ -63,23 +59,14 @@ class unet(nn.Module):
         #print (torch.Tensor.size(out5))
         out6 = self.maxpool(out5)
         #print (torch.Tensor.size(out6))
-        out7 = self.elu(self.conv8(self.dropout2(self.elu(self.conv7(out6)))))
-        #print (torch.Tensor.size(out7))
-        out8 = self.maxpool(out7)
-        #print (torch.Tensor.size(out8))
+
         #going down
                                                 
-        out9 = self.elu(self.conv10(self.dropout3(self.elu(self.conv9(out8)))))
+        out9 = self.elu(self.conv10(self.dropout3(self.elu(self.conv9(out6)))))
         #print (torch.Tensor.size(out9))
         #lowermost block
-                                               
-        out10 = self.convT1(out9)
-        #print (torch.Tensor.size(out10))
-        out11 = torch.cat((out10,out7),1) 
-        #print (torch.Tensor.size(out11))
-        out12 = self.elu(self.conv12(self.dropout2(self.elu(self.conv11(out11)))))  
-        #print (torch.Tensor.size(out12))                          
-        out13 = self.convT2(out12)
+                                                                       
+        out13 = self.convT2(out9)
         #print (torch.Tensor.size(out13))
         out14 = torch.cat((out13,out5),1)
         #print (torch.Tensor.size(out14))
