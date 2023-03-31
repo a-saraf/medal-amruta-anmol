@@ -25,27 +25,21 @@ test_dir = {"pre":test_preop_dir, "post":test_postop_dir}
 test_dataset = create_dataset(test_dir)
 test_dataset_size = len(test_dataset)
 
+#GPU
+#if device == "cuda":
+   # gen_model.to(device)
+   # dis_model.to(device)
+   # generator_loss.to(device)
+   # discriminator_loss.to(device)
+
+#Testing loss
 generator_loss = torch.nn.BCELoss()
 discriminator_loss = torch.nn.BCELoss()
-
-if device == "cuda":
-    gen_model.to(device)
-    dis_model.to(device)
-    generator_loss.to(device)
-    discriminator_loss.to(device)
-
-optimizer_G = torch.optim.Adam(gen_model.parameters())
-optimizers_D = torch.optim.Adam(dis_model.parameters())
-epochs = 500
 Tensor = torch.cuda.FloatTensor if (device == "cuda") else torch.FloatTensor
-last_loss = 1000
-patience = 5
-triggertimes = 0
-
-# Testing code
 loss_G_total = 0
 loss_D_total = 0
     
+#Testing loop
 with torch.no_grad():
     for i, data in enumerate(test_dataset):
         pre_data = data["pre"]
