@@ -5,7 +5,6 @@ from unet3d import unet
 from gan3d import Discriminator
 from torch.autograd import Variable
 
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
@@ -16,7 +15,6 @@ gen_model.load_state_dict(torch.load(path))
 dis_model= Discriminator()
 path = '../ckpt_models/dis_models/dis_model_last.pth'
 dis_model.load_state_dict(torch.load(path))
-
 
 #TEST DATASET
 test_preop_dir = '../DATA/00_Test/'
@@ -44,32 +42,24 @@ with torch.no_grad():
     for i, data in enumerate(test_dataset):
         pre_data = data["pre"]
         post_data = data["post"]
-
         valid = Variable(Tensor(1, 2025).fill_(1.0), requires_grad=False)
         fake = Variable(Tensor(1, 2025).fill_(0.0), requires_grad=False)
-
         pre_data = Variable(pre_data.type(Tensor))
         post_data = Variable(post_data.type(Tensor))
         generated_postop_data = gen_model(pre_data)
-        
         concat_data = torch.cat([pre_data, generated_postop_data], axis=1)
-
-        loss_G = generator_loss(dis_model(concat_data), valid)
-            
+        loss_G = generator_loss(dis_model(concat_data), valid)   
         real_loss = discriminator_loss(dis_model(torch.cat([pre_data, post_data], axis=1)), valid)
         fake_loss = discriminator_loss(dis_model(concat_data.detach()), fake)
         loss_D = (real_loss + fake_loss) / 2
-
         loss_G_total += loss_G.item()
         loss_D_total += loss_D.item()
 
+#Printing loss
 loss_G_total /= test_dataset_size
 loss_D_total /= test_dataset_size
-
 print( "loss_G", loss_G.item(), "loss_D", loss_D.item())
-
 file_log = open("test_log.txt","a")
 file_log.write(" loss_G "+ str(loss_G.item()) + " loss_D " + str(loss_D.item()) + '\n')
 file_log.close()
-
 print('------------------------------------------------------------------------------------------------')
