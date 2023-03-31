@@ -45,8 +45,6 @@ triggertimes = 0
 # Testing code
 loss_G_total = 0
 loss_D_total = 0
-gen_model.eval()
-dis_model.eval()
     
 with torch.no_grad():
     for i, data in enumerate(test_dataset):
